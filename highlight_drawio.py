@@ -83,7 +83,7 @@ def shape_signature(paths, tol=1e-4, scale_invariant=False):
 # --- End of integrated functions ---
 
 
-def highlight_text(input_file, output_file, search_texts, padding=5, size=None): # padding and size added
+def highlight_text(input_file, output_file, search_texts, padding=5, size=None, offset=None): # padding and size added
     """Finds cells with a specific text value or value prefix and adds a highlight box around them."""
     tree = ET.parse(input_file)
     root = tree.getroot()
@@ -115,13 +115,13 @@ def highlight_text(input_file, output_file, search_texts, padding=5, size=None):
 
     print(f"Found {len(unique_found_cells)} instance(s) of text matching prefixes. Highlighting them...")
     for i, cell in enumerate(unique_found_cells):
-        add_highlight_for_cell(cell.find("mxGeometry"), graph_model_root, tmpl_layer_id, f"text-highlight-{i}-{cell.get('id')}", padding, size) # padding and size passed
+        add_highlight_for_cell(cell.find("mxGeometry"), graph_model_root, tmpl_layer_id, f"text-highlight-{i}-{cell.get('id')}", padding, size, offset) # padding and size passed
 
     tree.write(output_file, encoding='utf-8', xml_declaration=True)
     print(f"Created highlighted file: {output_file}")
 
 
-def highlight_circles(input_file, output_file, ref_prefix="AR_G_2_", tolerance=0.5, padding=5, size=None): # padding and size added
+def highlight_circles(input_file, output_file, ref_prefix="AR_G_2_", tolerance=0.5, padding=5, size=None, offset=None): # padding and size added
     """Finds path-based shapes that match a reference circle shape and highlights them."""
     tree = ET.parse(input_file)
     root = tree.getroot()
@@ -178,7 +178,7 @@ def highlight_circles(input_file, output_file, ref_prefix="AR_G_2_", tolerance=0
             height = max_y - min_y
 
             bbox_geom = {'x': str(min_x), 'y': str(min_y), 'width': str(width), 'height': str(height)}
-            add_highlight_for_bbox(bbox_geom, graph_model_root, tmpl_layer_id, f"circle-highlight-{prefix}", padding, size) # padding and size passed
+            add_highlight_for_bbox(bbox_geom, graph_model_root, tmpl_layer_id, f"circle-highlight-{prefix}", padding, size, offset) # padding and size passed
 
     if found_circles_count == 0:
         print("No matching circle shapes found to highlight.")
@@ -189,7 +189,7 @@ def highlight_circles(input_file, output_file, ref_prefix="AR_G_2_", tolerance=0
     print(f"Created highlighted file: {output_file}")
 
 
-def add_highlight_for_bbox(geom_attrs, graph_root, layer_id, base_id, padding=5, size=None): # size added as parameter
+def add_highlight_for_bbox(geom_attrs, graph_root, layer_id, base_id, padding=5, size=None, offset=None): # size added as parameter
     """Helper function to add a highlight box for a given bounding box dictionary."""
     if not all(k in geom_attrs for k in ['x', 'y', 'width', 'height']):
         return
@@ -220,6 +220,16 @@ def add_highlight_for_bbox(geom_attrs, graph_root, layer_id, base_id, padding=5,
         box_width = width + 2 * padding
         box_height = height + 2 * padding
     
+    # Apply offset if provided
+    if offset and 'x' in offset and 'y' in offset:
+        try:
+            offset_x = float(offset['x'])
+            offset_y = float(offset['y'])
+            box_x += offset_x
+            box_y += offset_y
+        except (ValueError, TypeError):
+            print(f"Warning: Invalid 'offset' values in config: {offset}. Ignoring.")
+    
     new_id = f"highlight-box-{base_id}"
     
     if graph_root.find(f".//object[@id='{new_id}']") is not None:
@@ -239,11 +249,11 @@ def add_highlight_for_bbox(geom_attrs, graph_root, layer_id, base_id, padding=5,
     obj.append(new_cell)
     graph_root.append(obj)
 
-def add_highlight_for_cell(geom_element, graph_root, layer_id, base_id, padding=5, size=None): # size added
+def add_highlight_for_cell(geom_element, graph_root, layer_id, base_id, padding=5, size=None, offset=None): # size added
     """Wrapper to use the same highlighter for cells with mxGeometry."""
     if geom_element is None:
         return
-    add_highlight_for_bbox(geom_element.attrib, graph_root, layer_id, base_id, padding, size)
+    add_highlight_for_bbox(geom_element.attrib, graph_root, layer_id, base_id, padding, size, offset)
 
 
 def print_usage():
@@ -285,6 +295,7 @@ if __name__ == '__main__':
     # Set a default padding
     effective_padding = 10
     size_to_use = None
+    offset_to_use = None
 
     if mode_arg == '--text':
         # For text mode, CLI padding overrides the default
@@ -299,7 +310,7 @@ if __name__ == '__main__':
             search_texts = [s.strip() for s in search_param.split(',')]
         else:
             search_texts = [search_param]
-        highlight_text(input_f, output_f, search_texts, padding=effective_padding, size=size_to_use)
+        highlight_text(input_f, output_f, search_texts, padding=effective_padding, size=size_to_use, offset=offset_to_use)
 
     elif mode_arg == '--config':
         if not args:
@@ -335,9 +346,16 @@ if __name__ == '__main__':
                 print(f"Warning: Invalid 'size' object in config: {size_from_config}. It must be a dictionary with 'width' and 'height'. Ignoring.")
             else:
                 size_to_use = size_from_config
+        
+        offset_from_config = config.get("offset")
+        if offset_from_config:
+            if not (isinstance(offset_from_config, dict) and 'x' in offset_from_config and 'y' in offset_from_config):
+                print(f"Warning: Invalid 'offset' object in config: {offset_from_config}. It must be a dictionary with 'x' and 'y'. Ignoring.")
+            else:
+                offset_to_use = offset_from_config
 
         if "text_prefixes" in config and isinstance(config["text_prefixes"], list):
-            highlight_text(input_f, output_f, config["text_prefixes"], padding=effective_padding, size=size_to_use)
+            highlight_text(input_f, output_f, config["text_prefixes"], padding=effective_padding, size=size_to_use, offset=offset_to_use)
         elif "tasks" in config and isinstance(config["tasks"], list):
             print("Error: 'tasks' config type not yet fully supported. Please use 'text_prefixes'.")
             sys.exit(1)
@@ -381,7 +399,7 @@ if __name__ == '__main__':
                 print_usage()
                 sys.exit(1)
 
-        highlight_circles(input_f, output_f, ref_prefix=ref_prefix, tolerance=tolerance, padding=effective_padding, size=size_to_use)
+        highlight_circles(input_f, output_f, ref_prefix=ref_prefix, tolerance=tolerance, padding=effective_padding, size=size_to_use, offset=offset_to_use)
     else:
         print(f"Error: Invalid mode '{mode_arg}'.")
         print_usage()
