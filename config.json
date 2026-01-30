@@ -1,0 +1,30 @@
+{
+  "target_folder": "target",
+  "yellow_highlight": {
+    "text_prefixes": [
+      "CM-",
+      "HO-"
+    ],
+    "padding": 0,
+    "size": {
+      "width": 35,
+      "height": 25
+    },
+    "offset": {
+      "x": 0,
+      "y": 4
+    }
+  },
+  "green_box": {
+    "target_pattern": "(B\\d+|\\d+F)[\\w.-]+",
+    "size": {
+      "width": 40,
+      "height": 10
+    },
+    "offset": {
+      "x": 5,
+      "y": 0
+    },
+    "padding": 5
+  }
+}
