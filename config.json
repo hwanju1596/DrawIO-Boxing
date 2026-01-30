@@ -16,7 +16,6 @@
     }
   },
   "green_box": {
-    "target_pattern": "(B\\d+|\\d+F)[\\w.-]+",
     "size": {
       "width": 40,
       "height": 10

@@ -1,6 +1,6 @@
 ﻿<mxfile host="65bd71144e">
     <diagram id="Eihf7U44JL8IuXuOAIvs" name="지하4층 창호 안내도-1">
-        <mxGraphModel dx="1920" dy="2275" grid="1" gridSize="9.8425" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1653" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="67" dy="17" grid="1" gridSize="9.8425" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1653" pageHeight="1169" math="0" shadow="0">
             <root>
                 <object label="" elemType="" dwgId="APO 61-006" scale="A1=1/250, A3=1/500" tag="" layerPrefix="Eihf" id="0">
                     <mxCell/>
@@ -3335,7 +3335,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="Eihf-6" value="Layer_Text2" parent="0"/>
-                <mxCell id="Eihf-7" value="Layer_Text" style="locked=1;" parent="0"/>
+                <mxCell id="Eihf-7" value="Layer_Text" style="" parent="0"/>
                 <mxCell id="PdfTxt-1" value="경차경차경차경차" style="text;rotation=90;fontFamily=MalgunGothic;fontSize=8.4;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="Eihf-7" vertex="1">
                     <mxGeometry x="1208.842" y="546.7426" width="61.486" height="8.395" as="geometry"/>
                 </mxCell>
@@ -3448,7 +3448,7 @@
                     <mxGeometry x="471.0468" y="810.128" width="14.242" height="8.395" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-38" value="가족배려주차장" style="text;fontFamily=MalgunGothic;fontSize=3.87;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="Eihf-7" vertex="1">
-                    <mxGeometry x="887.6342" y="817.7896" width="16.087" height="3.871" as="geometry"/>
+                    <mxGeometry x="885.83" y="817.79" width="17.9" height="3.87" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-39" value="가족배려주차장" style="text;fontFamily=MalgunGothic;fontSize=3.87;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="Eihf-7" vertex="1">
                     <mxGeometry x="910.8625" y="817.7896" width="16.087" height="3.871" as="geometry"/>

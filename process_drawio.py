@@ -64,77 +64,96 @@ def add_yellow_highlight_box(geom_attrs, graph_root, layer_id, base_id, padding,
 
 # --- Green Box for Text Functions ---
 
-import re
-
 def apply_green_text_boxing(graph_root, config):
-    """Finds sequences of text elements that form a target string and boxes them."""
+    """Finds groups of 2 or 3 adjacent text elements based on spatial proximity and boxes them."""
     cfg = config.get('green_box', {})
-    target_pattern = cfg.get('target_pattern')
-    if not target_pattern:
-        return
+    y_threshold = cfg.get('y_threshold', 5.0)
+    x_gap_threshold = cfg.get('x_gap_threshold', 25.0)
+    x_overlap_threshold = 2.0  # Allow for minor overlaps
 
-    # 1. Get all text elements from the graph
-    all_text_elements = []
+    # 1. Group all text elements by their parent ID
+    cells_by_parent = {}
     for cell in graph_root.findall(".//mxCell[@value]"):
         geom = cell.find('mxGeometry')
-        if geom is not None and cell.get('value'):
-            all_text_elements.append({
-                'value': cell.get('value'),
+        parent_id = cell.get('parent')
+        if geom is not None and cell.get('value') and parent_id and cell.get('vertex') == '1':
+            if parent_id not in cells_by_parent:
+                cells_by_parent[parent_id] = []
+            cells_by_parent[parent_id].append({
                 'x': float(geom.get('x', 0)), 'y': float(geom.get('y', 0)),
                 'width': float(geom.get('width', 0)), 'height': float(geom.get('height', 0)),
             })
 
-    # 2. Sort elements by reading order (top-to-bottom, left-to-right)
-    all_text_elements.sort(key=lambda e: (e['y'], e['x']))
-
-    # 3. Find consecutive text elements that match the regex pattern
     found_groups = []
-    i = 0
-    max_group_size = 10 # Max number of text fragments to join
-
-    while i < len(all_text_elements):
-        matched = False
-        # Check potential groups of decreasing size starting from max_group_size
-        for length in range(min(max_group_size, len(all_text_elements) - i), 0, -1):
-            group_to_test = all_text_elements[i : i + length]
-            
-            # Basic continuity check: must be on the same line
-            first_y = group_to_test[0]['y']
-            if not all(abs(e['y'] - first_y) < 10 for e in group_to_test):
-                continue
-            
-            concatenated_text = "".join(e['value'].strip() for e in group_to_test)
-            
-            if re.fullmatch(target_pattern, concatenated_text):
-                # More rigorous continuity check for the matched group
-                is_continuous = True
-                for k in range(len(group_to_test) - 1):
-                    curr_elem = group_to_test[k]
-                    next_elem = group_to_test[k+1]
-                    gap = next_elem['x'] - (curr_elem['x'] + curr_elem['width'])
-                    if gap < 0 or gap > 25: # Allow small overlap or gap
-                        is_continuous = False
-                        break
-                
-                if is_continuous:
-                    found_groups.append(group_to_test)
-                    i += length # Move index past this found group
-                    matched = True
-                    break # Break from inner loop (length)
+    
+    # 2. For each parent group, find lines and then text clusters within those lines
+    for parent_id, elements in cells_by_parent.items():
+        if len(elements) < 2:
+            continue
         
-        if not matched:
-            i += 1
-            
+        # Sort by Y then X to order elements for line-finding
+        elements.sort(key=lambda e: (e['y'], e['x']))
+
+        # Find continuous lines of text based on y_threshold
+        lines = []
+        if elements:
+            current_line = [elements[0]]
+            for i in range(1, len(elements)):
+                # If the next element is on the same line (close y)
+                if abs(elements[i]['y'] - current_line[-1]['y']) < y_threshold:
+                    current_line.append(elements[i])
+                else:
+                    # New line starts
+                    if len(current_line) >= 2:
+                        lines.append(current_line)
+                    current_line = [elements[i]]
+            # Add the last line
+            if len(current_line) >= 2:
+                lines.append(current_line)
+
+        # 3. In each line, find groups of 2 or 3
+        for line in lines:
+            i = 0
+            while i < len(line):
+                # Attempt to find a group of 3 (greedy)
+                if i + 2 < len(line):
+                    group = [line[i], line[i+1], line[i+2]]
+                    gap1 = group[1]['x'] - (group[0]['x'] + group[0]['width'])
+                    gap2 = group[2]['x'] - (group[1]['x'] + group[1]['width'])
+                    
+                    if (-x_overlap_threshold <= gap1 < x_gap_threshold) and \
+                       (-x_overlap_threshold <= gap2 < x_gap_threshold):
+                        found_groups.append(group)
+                        i += 3
+                        continue
+
+                # Attempt to find a group of 2
+                if i + 1 < len(line):
+                    group = [line[i], line[i+1]]
+                    gap = group[1]['x'] - (group[0]['x'] + group[0]['width'])
+                    
+                    if -x_overlap_threshold <= gap < x_gap_threshold:
+                        found_groups.append(group)
+                        i += 2
+                        continue
+                
+                i += 1
+
     print(f"Found {len(found_groups)} text groups for green boxing.")
 
     # 4. Add a bounding box around each found group
     if not found_groups:
         return
         
-    padding = cfg.get('padding', 5)
+    padding = cfg.get('padding', 2)
     size = cfg.get('size')
     offset = cfg.get('offset')
-    tmpl_layer_id = graph_root.find("./mxCell[@value='Layer_Tmpl']").get('id')
+    
+    tmpl_layer = graph_root.find("./mxCell[@value='Layer_Tmpl']")
+    if tmpl_layer is None:
+        print("Warning: Layer_Tmpl not found for green boxing.")
+        return
+    tmpl_layer_id = tmpl_layer.get('id')
 
     for i, group in enumerate(found_groups):
         add_green_box(group, graph_root, tmpl_layer_id, f"green-box-{i}", padding, size, offset)
