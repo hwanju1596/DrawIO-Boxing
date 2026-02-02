@@ -1,6 +1,6 @@
 ﻿<mxfile host="65bd71144e">
     <diagram id="qFmRX8pwgVRubtkk0Nef" name="지하6층 창호 안내도-1">
-        <mxGraphModel dx="97" dy="32" grid="1" gridSize="9.8425" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1653" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="414" dy="107" grid="1" gridSize="9.8425" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1653" pageHeight="1169" math="0" shadow="0">
             <root>
                 <object label="" elemType="" dwgId="APO 61-002" scale="A1=1/250, A3=1/500" tag="" layerPrefix="qFmR" id="0">
                     <mxCell/>
@@ -2313,7 +2313,7 @@
                     <mxGeometry x="1499.136" y="749.6849" width="38.008" height="8.073" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-92" value="제출(금회작성:PODIUM)" style="text;fontFamily=MalgunGothic;fontSize=8.07;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="qFmR-7" vertex="1">
-                    <mxGeometry x="1539.554" y="749.6849" width="73.81" height="8.073" as="geometry"/>
+                    <mxGeometry x="1427.16" y="738.18" width="195.49" height="8.07" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-95" value="T" style="text;fontFamily=MalgunGothic;fontSize=5.17;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="qFmR-7" vertex="1">
                     <mxGeometry x="1534.586" y="955.6699" width="2.34" height="5.166" as="geometry"/>
@@ -2400,7 +2400,7 @@
                     <mxGeometry x="1512.038" y="1083.46" width="21.91" height="12.916" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-129" value="안내도-1" style="text;fontFamily=MalgunGothic;fontSize=12.92;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="qFmR-7" vertex="1">
-                    <mxGeometry x="1537.804" y="1083.46" width="43.393" height="12.916" as="geometry"/>
+                    <mxGeometry x="1537.804" y="1.46" width="43.393" height="12.916" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-131" value="APO" style="text;fontFamily=MalgunGothic;fontSize=16.15;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="qFmR-7" vertex="1">
                     <mxGeometry x="1487.449" y="1116.343" width="27.415" height="16.145" as="geometry"/>
@@ -2520,7 +2520,7 @@
                     <mxGeometry x="709.6476" y="1090.71" width="32.865" height="19.752" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-172" value="안내도-1" style="text;fontFamily=MalgunGothicBold;fontSize=19.75;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="qFmR-7" vertex="1">
-                    <mxGeometry x="748.2974" y="1090.71" width="65.632" height="19.752" as="geometry"/>
+                    <mxGeometry x="748.2974" y="500.71" width="65.632" height="19.752" as="geometry"/>
                 </mxCell>
                 <mxCell id="PdfTxt-174" value="KEY" style="text;fontFamily=MalgunGothic;fontSize=9.45;fontColor=#FF0000;strokeColor=#00FF00;strokeWidth=0.2;align=center;fillColor=none;verticalAlign=middle;labelPosition=center;verticalLabelPosition=middle" parent="qFmR-7" vertex="1">
                     <mxGeometry x="1436.174" y="587.5903" width="13.389" height="9.453" as="geometry"/>

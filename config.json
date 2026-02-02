@@ -16,14 +16,22 @@
     }
   },
   "green_box": {
+    "required_font_size": "8.07",
+    "exclude_hangul": true,
+    "max_x_coordinate": 1427,
+    "max_y_coordinate": 1090,
+    "y_threshold": 5.0,
+    "x_gap_threshold": 25.0,
     "size": {
       "width": 40,
       "height": 10
     },
     "offset": {
-      "x": 5,
+      "x": 0,
       "y": 0
     },
-    "padding": 5
+    "padding": 5,
+    "max_group_width": 35,
+    "min_group_width": 20
   }
 }
