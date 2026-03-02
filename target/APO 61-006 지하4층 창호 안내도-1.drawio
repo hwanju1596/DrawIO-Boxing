@@ -1,6 +1,6 @@
 ﻿<mxfile host="65bd71144e">
     <diagram id="Eihf7U44JL8IuXuOAIvs" name="지하4층 창호 안내도-1">
-        <mxGraphModel dx="67" dy="17" grid="1" gridSize="9.8425" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1653" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="84" dy="20" grid="1" gridSize="9.8425" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1653" pageHeight="1169" math="0" shadow="0">
             <root>
                 <object label="" elemType="" dwgId="APO 61-006" scale="A1=1/250, A3=1/500" tag="" layerPrefix="Eihf" id="0">
                     <mxCell/>
@@ -13,7 +13,7 @@
                 </object>
                 <mxCell id="Eihf-3" value="Layer_Tmpl" parent="0"/>
                 <mxCell id="Eihf-4" value="Layer_Data" parent="0"/>
-                <mxCell id="Eihf-5" value="Layer_Line" style="locked=1;" parent="0"/>
+                <mxCell id="Eihf-5" value="Layer_Line" style="" parent="0"/>
                 <mxCell id="AR_G_1_1" value="" style="curved=1;endArrow=none;html=1;strokeColor=#00FF00;strokeWidth=0.2;" parent="Eihf-5" edge="1">
                     <mxGeometry width="13.818" height="5.295" as="geometry">
                         <mxPoint x="1448.094" y="839.5345" as="sourcePoint"/>
