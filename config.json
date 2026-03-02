@@ -20,8 +20,9 @@
     "exclude_hangul": true,
     "max_x_coordinate": 1427,
     "max_y_coordinate": 1090,
-    "y_threshold": 5.0,
+    "y_threshold": 2.0,
     "x_gap_threshold": 25.0,
+    "x_gap_threshold_2": 5.0,
     "size": {
       "width": 40,
       "height": 10
@@ -32,6 +33,7 @@
     },
     "padding": 5,
     "max_group_width": 35,
-    "min_group_width": 20
+    "min_group_width": 20,
+    "min_group_width_2": 27
   }
 }

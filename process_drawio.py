@@ -62,15 +62,15 @@ def add_yellow_highlight_box(geom_attrs, graph_root, layer_id, base_id, padding,
     obj.append(cell)
     graph_root.append(obj)
 
-# --- Green Box for Text Functions ---
-
 import re
+import csv
 
 def apply_green_text_boxing(graph_root, config, filename):
     """Finds groups of 2 or 3 adjacent text elements based on spatial proximity and boxes them."""
     cfg = config.get('green_box', {})
     y_threshold = cfg.get('y_threshold', 5.0)
     x_gap_threshold = cfg.get('x_gap_threshold', 25.0)
+    x_gap_threshold_2 = cfg.get('x_gap_threshold_2', x_gap_threshold)
     x_overlap_threshold = 2.0  # Allow for minor overlaps
     required_font_size = cfg.get('required_font_size')
     exclude_hangul = cfg.get('exclude_hangul', False)
@@ -78,8 +78,12 @@ def apply_green_text_boxing(graph_root, config, filename):
     max_y_coordinate = cfg.get('max_y_coordinate') # New config
     max_group_width = cfg.get('max_group_width')
     min_group_width = cfg.get('min_group_width')
+    min_group_width_2 = cfg.get('min_group_width_2', 27.0)
+
+    extracted_texts = []
 
     # 1. Group all text elements by their parent ID, filtering by font size
+    # ... (existing logic)
     cells_by_parent = {}
     for cell in graph_root.findall(".//mxCell[@value]"):
         geom = cell.find('mxGeometry')
@@ -122,16 +126,17 @@ def apply_green_text_boxing(graph_root, config, filename):
                 else:
                     # New line starts
                     if len(current_line) >= 2:
-                        lines.append(current_line)
+                        lines.append(sorted(current_line, key=lambda e: e['x']))
                     current_line = [elements[i]]
             # Add the last line
             if len(current_line) >= 2:
-                lines.append(current_line)
+                lines.append(sorted(current_line, key=lambda e: e['x']))
 
         # 3. In each line, find groups of 2 or 3
         for line in lines:
             i = 0
             while i < len(line):
+                success = False
                 # Attempt to find a group of 3 (greedy)
                 if i + 2 < len(line):
                     group = [line[i], line[i+1], line[i+2]]
@@ -161,54 +166,71 @@ def apply_green_text_boxing(graph_root, config, filename):
                             min_x = min(e['x'] for e in group)
                             max_x = max(e['x'] + e['width'] for e in group)
                             group_width = max_x - min_x
+                            combined_text = "".join(e['value'] for e in group)
                             
                             is_out_of_bounds = (min_group_width is not None and group_width < min_group_width) or \
                                                (max_group_width is not None and group_width > max_group_width)
                             
                             if is_out_of_bounds:
-                                print(f"DEBUG: [{os.path.basename(filename)}] Group Width: {group_width:.2f} <-- WARNING: Width is outside of range ({min_group_width}-{max_group_width})")
+                                print(f"DEBUG: [{os.path.basename(filename)}] Group Width Out of Range (3): {combined_text} ({group_width:.2f})")
+                            else:
+                                print(f"[{os.path.basename(filename)}] Green Box Text (3): {combined_text}")
+                                found_groups.append(group)
+                                extracted_texts.append({'text': combined_text, 'width': group_width})
                                 i += 3
+                                success = True
                                 continue
-                            found_groups.append(group)
 
-                        i += 3
-                        continue
-
-                # # Attempt to find a group of 2
-                # if i + 1 < len(line):
-                #     group = [line[i], line[i+1]]
-                #     gap = group[1]['x'] - (group[0]['x'] + group[0]['width'])
+                # Attempt group of 2 if 3 failed or wasn't possible
+                if not success and i + 1 < len(line):
+                    group = [line[i], line[i+1]]
+                    gap1 = group[1]['x'] - (group[0]['x'] + group[0]['width'])
                     
-                #     if -x_overlap_threshold <= gap < x_gap_threshold:
-                #         is_hangul_present = False
-                #         if exclude_hangul:
-                #             combined_text = "".join(e['value'] for e in group)
-                #             if re.search('[\uac00-\ud7a3]', combined_text):
-                #                 is_hangul_present = True
+                    if (-x_overlap_threshold <= gap1 < x_gap_threshold_2):
+                        is_hangul_present = False
+                        if exclude_hangul:
+                            combined_text = "".join(e['value'] for e in group)
+                            if re.search('[\uac00-\ud7a3]', combined_text):
+                                is_hangul_present = True
                         
-                #         is_beyond_max_x = False
-                #         if max_x_coordinate is not None:
-                #             if any(e['x'] > max_x_coordinate for e in group):
-                #                 is_beyond_max_x = True
-                        
-                #         is_beyond_max_y = False
-                #         if max_y_coordinate is not None:
-                #             if any(e['y'] > max_y_coordinate for e in group):
-                #                 is_beyond_max_y = True
+                        is_beyond_max_x = False
+                        if max_x_coordinate is not None:
+                            if any(e['x'] > max_x_coordinate for e in group):
+                                is_beyond_max_x = True
 
-                #         if not is_hangul_present and not is_beyond_max_x and not is_beyond_max_y:
-                #             found_groups.append(group)
+                        is_beyond_max_y = False
+                        if max_y_coordinate is not None:
+                            if any(e['y'] > max_y_coordinate for e in group):
+                                is_beyond_max_y = True
+
+                        if not is_hangul_present and not is_beyond_max_x and not is_beyond_max_y:
+                            min_x = min(e['x'] for e in group)
+                            max_x = max(e['x'] + e['width'] for e in group)
+                            group_width = max_x - min_x
+                            combined_text = "".join(e['value'] for e in group)
                             
-                #         i += 2
-                #         continue
+                            is_out_of_bounds = (min_group_width_2 is not None and group_width < min_group_width_2) or \
+                                               (max_group_width is not None and group_width > max_group_width)
+                            
+                            if is_out_of_bounds:
+                                # pass 
+                                print(f"DEBUG: [{os.path.basename(filename)}] Group Width Out of Range (2): {combined_text} ({group_width:.2f})")
+                            else:
+                                print(f"[{os.path.basename(filename)}] Green Box Text (2): {combined_text}")
+                                found_groups.append(group)
+                                extracted_texts.append({'text': combined_text, 'width': group_width})
+                                i += 2
+                                success = True
+                                continue
                 
-                i += 1
+                if not success:
+                    i += 1
 
     print(f"Found {len(found_groups)} text groups for green boxing.")
 
     # 4. Add a bounding box around each found group
     if not found_groups:
-        return
+        return extracted_texts
         
     padding = cfg.get('padding', 2)
     size = cfg.get('size')
@@ -217,13 +239,16 @@ def apply_green_text_boxing(graph_root, config, filename):
     tmpl_layer = graph_root.find("./mxCell[@value='Layer_Tmpl']")
     if tmpl_layer is None:
         print("Warning: Layer_Tmpl not found for green boxing.")
-        return
+        return extracted_texts
     tmpl_layer_id = tmpl_layer.get('id')
 
     for i, group in enumerate(found_groups):
         add_green_box(group, graph_root, tmpl_layer_id, f"green-box-{i}", padding, size, offset)
+    
+    return extracted_texts
 
 def add_green_box(element_group, graph_root, layer_id, base_id, padding, size, offset):
+    # ... (existing logic)
     """Draws a bounding box around a group of elements."""
     if not element_group:
         return
@@ -278,13 +303,15 @@ def process_file(input_file, output_file, config):
             graph_model_root.append(tmpl_layer)
 
         apply_yellow_highlighting(graph_model_root, config)
-        apply_green_text_boxing(graph_model_root, config, input_file) # <-- Changed to new function
+        extracted_texts = apply_green_text_boxing(graph_model_root, config, input_file)
 
         tree.write(output_file, encoding='utf-8', xml_declaration=True)
         print(f"Successfully processed and saved to {output_file}")
+        return extracted_texts
 
     except (ET.ParseError, ValueError) as e:
         print(f"Could not process {input_file}: {e}")
+        return []
 
 def main():
     try:
@@ -301,19 +328,31 @@ def main():
         
     print(f"Scanning for .drawio files in '{os.path.abspath(target_folder)}'")
     
+    all_extracted_data = []
+    
     for filename in os.listdir(target_folder):
         if filename.endswith('.drawio'):
             input_path = os.path.join(target_folder, filename)
             if os.path.abspath(input_path).startswith(os.path.abspath(output_folder)):
                 continue
             
-            # The logic now targets specific files based on the overall goal
-            # For now, we process all files in the target folder.
-            # A more advanced version could parse the schedule, get targets,
-            # and then only process floor plans that match the floor.
-            
             output_path = os.path.join(output_folder, filename)
-            process_file(input_path, output_path, config)
+            results = process_file(input_path, output_path, config)
+            
+            for item in results:
+                all_extracted_data.append({
+                    'Filename': filename, 
+                    'Text': item['text'], 
+                    'Width': f"{item['width']:.2f}"
+                })
+
+    if all_extracted_data:
+        csv_path = os.path.join(target_folder, 'extracted_green_boxes.csv')
+        with open(csv_path, 'w', newline='', encoding='utf-8-sig') as f:
+            writer = csv.DictWriter(f, fieldnames=['Filename', 'Text', 'Width'])
+            writer.writeheader()
+            writer.writerows(all_extracted_data)
+        print(f"Successfully extracted {len(all_extracted_data)} items to {csv_path}")
 
 if __name__ == '__main__':
     main()
