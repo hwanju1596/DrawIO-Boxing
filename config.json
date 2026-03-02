@@ -35,5 +35,10 @@
     "max_group_width": 35,
     "min_group_width": 20,
     "min_group_width_2": 27
+  },
+  "validation": {
+    "enable": true,
+    "master_list_path": "target/total_door_list.csv",
+    "output_path": "target/validation_report.csv"
   }
 }

@@ -348,11 +348,74 @@ def main():
 
     if all_extracted_data:
         csv_path = os.path.join(target_folder, 'extracted_green_boxes.csv')
-        with open(csv_path, 'w', newline='', encoding='utf-8-sig') as f:
-            writer = csv.DictWriter(f, fieldnames=['Filename', 'Text', 'Width'])
-            writer.writeheader()
-            writer.writerows(all_extracted_data)
-        print(f"Successfully extracted {len(all_extracted_data)} items to {csv_path}")
+        try:
+            with open(csv_path, 'w', newline='', encoding='utf-8-sig') as f:
+                writer = csv.DictWriter(f, fieldnames=['Filename', 'Text', 'Width'])
+                writer.writeheader()
+                writer.writerows(all_extracted_data)
+            print(f"Successfully extracted {len(all_extracted_data)} items to {csv_path}")
+        except PermissionError:
+            print(f"Error: Could not write to {csv_path}. Please ensure it is closed.")
+
+    # --- Validation Logic ---
+    val_cfg = config.get("validation", {})
+    if val_cfg.get("enable") and os.path.exists(val_cfg.get("master_list_path", "")):
+        master_list_path = val_cfg["master_list_path"]
+        output_path = val_cfg.get("output_path", "target/validation_report.csv")
+        
+        print(f"Running validation against '{master_list_path}'...")
+        
+        # Load master list
+        master_data = []
+        try:
+            with open(master_list_path, 'r', encoding='utf-8-sig') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    master_data.append(row)
+        except Exception as e:
+            print(f"Error reading master list: {e}")
+            return
+
+        # Prepare extracted set for fast lookup (cleaned)
+        extracted_set = set()
+        for item in all_extracted_data:
+            # Clean text: remove all whitespace
+            cleaned = "".join(item['Text'].split())
+            extracted_set.add(cleaned)
+
+        # Compare
+        validation_results = []
+        boxed_count = 0
+        for row in master_data:
+            floor = row.get('층', '').strip()
+            door_no = row.get('도어번호', '').strip()
+            target_key = floor + door_no
+            
+            # Also try without the floor prefix if it's already in door_no or something? 
+            # But based on results, 'B4OT.017' matches B4 + OT.017.
+            
+            is_boxed = target_key in extracted_set
+            if is_boxed:
+                boxed_count += 1
+            
+            validation_results.append({
+                'Master File': row.get('파일명', ''),
+                'Floor': floor,
+                'Door Number': door_no,
+                'Status': 'Boxed' if is_boxed else 'Not Boxed'
+            })
+
+        # Save report
+        try:
+            with open(output_path, 'w', newline='', encoding='utf-8-sig') as f:
+                writer = csv.DictWriter(f, fieldnames=['Master File', 'Floor', 'Door Number', 'Status'])
+                writer.writeheader()
+                writer.writerows(validation_results)
+            print(f"Validation complete. Boxed: {boxed_count}/{len(master_data)}. Report saved to {output_path}")
+        except PermissionError:
+            print(f"Error: Could not write to {output_path}. Please ensure it is closed.")
+        except Exception as e:
+            print(f"Error writing validation report: {e}")
 
 if __name__ == '__main__':
     main()
