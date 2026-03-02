@@ -1,5 +1,6 @@
 {
   "target_folder": "target",
+  "pdf_search_path": "target/table/**/*.pdf",
   "yellow_highlight": {
     "text_prefixes": [
       "CM-",

@@ -2,6 +2,9 @@ import xml.etree.ElementTree as ET
 import sys
 import os
 import json
+import re
+import csv
+from extract_code import extract_all_pdfs
 
 # --- Yellow Highlight Functions ---
 
@@ -172,9 +175,8 @@ def apply_green_text_boxing(graph_root, config, filename):
                                                (max_group_width is not None and group_width > max_group_width)
                             
                             if is_out_of_bounds:
-                                print(f"DEBUG: [{os.path.basename(filename)}] Group Width Out of Range (3): {combined_text} ({group_width:.2f})")
+                                pass
                             else:
-                                print(f"[{os.path.basename(filename)}] Green Box Text (3): {combined_text}")
                                 found_groups.append(group)
                                 extracted_texts.append({'text': combined_text, 'width': group_width})
                                 i += 3
@@ -213,10 +215,8 @@ def apply_green_text_boxing(graph_root, config, filename):
                                                (max_group_width is not None and group_width > max_group_width)
                             
                             if is_out_of_bounds:
-                                # pass 
-                                print(f"DEBUG: [{os.path.basename(filename)}] Group Width Out of Range (2): {combined_text} ({group_width:.2f})")
+                                pass
                             else:
-                                print(f"[{os.path.basename(filename)}] Green Box Text (2): {combined_text}")
                                 found_groups.append(group)
                                 extracted_texts.append({'text': combined_text, 'width': group_width})
                                 i += 2
@@ -320,7 +320,16 @@ def main():
     except FileNotFoundError:
         print("Error: config.json not found.")
         return
-        
+
+    # Update door list from PDFs only if validation is enabled
+    val_cfg = config.get("validation", {})
+    if val_cfg.get("enable"):
+        pdf_path = config.get("pdf_search_path", "target/table/**/*.pdf")
+        print(f"Step 1: Extracting door list from PDFs (Path: {pdf_path})...")
+        extract_all_pdfs(pdf_path)
+    else:
+        print("Validation disabled. Skipping PDF extraction step.")
+    
     target_folder = config.get("target_folder", ".")
     output_folder = os.path.join(target_folder, 'outputs')
     if not os.path.exists(output_folder):

@@ -4,14 +4,17 @@ import re
 import glob
 import os
 
-def extract_all_pdfs():
+def extract_all_pdfs(search_path=None):
     all_data = []
     
-    # 현재 디렉터리의 모든 PDF 파일 찾기
-    pdf_files = glob.glob("*.pdf")
+    # search_path가 주어지지 않으면 기본값 사용
+    if not search_path:
+        search_path = os.path.join("target", "table", "**", "*.pdf")
+    
+    pdf_files = glob.glob(search_path, recursive=True)
     
     if not pdf_files:
-        print("PDF 파일을 찾을 수 없습니다.")
+        print(f"PDF 파일을 찾을 수 없습니다. (경로: {search_path})")
         return
 
     for pdf_path in pdf_files:
@@ -66,7 +69,7 @@ def extract_all_pdfs():
         import numpy as np
         df['층'] = df['층'].replace('', np.nan).ffill()
         
-        output_file = "total_door_list.csv"
+        output_file = os.path.join("target", "total_door_list.csv")
         df.to_csv(output_file, index=False, encoding="utf-8-sig")
         print(f"\n모든 파일 추출 완료: {output_file} (총 {len(df)}건)")
     else:
